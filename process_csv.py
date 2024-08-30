@@ -39,24 +39,68 @@ def remove_duplicates_from_csvs(file1, file2):
     
     return deduplicated_df
 
+def remove_duplicates_from_single_csv(file):
+    """
+    Remove duplicates from a single CSV file and return the result as a DataFrame.
+    
+    Args:
+    file (io.BytesIO): Uploaded CSV file
+    
+    Returns:
+    pd.DataFrame: Deduplicated DataFrame
+    """
+    # Read the CSV file
+    df = pd.read_csv(file)
+    
+    # Display information about the input file
+    st.write(f"Input file shape: {df.shape}")
+    
+    # Remove duplicates based on the first column (URL)
+    deduplicated_df = df.drop_duplicates(subset=[df.columns[0]])
+    st.write(f"Deduplicated shape: {deduplicated_df.shape}")
+    
+    return deduplicated_df
+
 st.title("CSV Duplicate Remover")
 
-st.write("Upload two CSV files to remove duplicates")
+st.write("Choose an option:")
+option = st.radio("", ("Remove duplicates from two files", "Remove duplicates within a single file"))
 
-file1 = st.file_uploader("Choose the first CSV file", type="csv")
-file2 = st.file_uploader("Choose the second CSV file", type="csv")
+if option == "Remove duplicates from two files":
+    st.write("Upload two CSV files to remove duplicates")
+    file1 = st.file_uploader("Choose the first CSV file", type="csv", key="file1")
+    file2 = st.file_uploader("Choose the second CSV file", type="csv", key="file2")
 
-if file1 is not None and file2 is not None:
-    if st.button("Remove Duplicates"):
-        result_df = remove_duplicates_from_csvs(file1, file2)
-        st.write("Duplicates removed. Preview of the result:")
-        st.dataframe(result_df)  # Show the entire dataframe instead of just the head
-        
-        # Provide download link for the result
-        csv = result_df.to_csv(index=False)
-        st.download_button(
-            label="Download CSV",
-            data=csv,
-            file_name="output_without_duplicates.csv",
-            mime="text/csv",
-        )
+    if file1 is not None and file2 is not None:
+        if st.button("Remove Duplicates"):
+            result_df = remove_duplicates_from_csvs(file1, file2)
+            st.write("Duplicates removed. Preview of the result:")
+            st.dataframe(result_df)
+            
+            # Provide download link for the result
+            csv = result_df.to_csv(index=False)
+            st.download_button(
+                label="Download CSV",
+                data=csv,
+                file_name="output_without_duplicates.csv",
+                mime="text/csv",
+            )
+
+else:
+    st.write("Upload a single CSV file to remove duplicates within it")
+    file = st.file_uploader("Choose a CSV file", type="csv", key="single_file")
+
+    if file is not None:
+        if st.button("Remove Duplicates"):
+            result_df = remove_duplicates_from_single_csv(file)
+            st.write("Duplicates removed. Preview of the result:")
+            st.dataframe(result_df)
+            
+            # Provide download link for the result
+            csv = result_df.to_csv(index=False)
+            st.download_button(
+                label="Download CSV",
+                data=csv,
+                file_name="output_without_duplicates_single.csv",
+                mime="text/csv",
+            )
