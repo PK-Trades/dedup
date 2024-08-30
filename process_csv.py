@@ -17,11 +17,25 @@ def remove_duplicates_from_csvs(file1, file2):
     df1 = pd.read_csv(file1)
     df2 = pd.read_csv(file2)
     
+    # Display information about the input files
+    st.write(f"File 1 shape: {df1.shape}")
+    st.write(f"File 2 shape: {df2.shape}")
+    
+    # Identify common columns
+    common_columns = list(set(df1.columns) & set(df2.columns))
+    st.write(f"Common columns: {common_columns}")
+    
+    # Use only common columns for deduplication
+    df1 = df1[common_columns]
+    df2 = df2[common_columns]
+    
     # Concatenate the dataframes
     combined_df = pd.concat([df1, df2], ignore_index=True)
+    st.write(f"Combined shape: {combined_df.shape}")
     
-    # Remove duplicates
-    deduplicated_df = combined_df.drop_duplicates()
+    # Remove duplicates based on the first column (URL)
+    deduplicated_df = combined_df.drop_duplicates(subset=[combined_df.columns[0]])
+    st.write(f"Deduplicated shape: {deduplicated_df.shape}")
     
     return deduplicated_df
 
@@ -36,7 +50,7 @@ if file1 is not None and file2 is not None:
     if st.button("Remove Duplicates"):
         result_df = remove_duplicates_from_csvs(file1, file2)
         st.write("Duplicates removed. Preview of the result:")
-        st.dataframe(result_df.head())
+        st.dataframe(result_df)  # Show the entire dataframe instead of just the head
         
         # Provide download link for the result
         csv = result_df.to_csv(index=False)
